@@ -1,1 +1,1 @@
-# Project for detecting wheelchair users on road.
+# Project for detecting and classify Vulnerable Road Users (VRU) on road.
