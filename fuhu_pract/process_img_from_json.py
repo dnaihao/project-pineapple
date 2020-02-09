@@ -56,20 +56,26 @@ def process_images():
     j = {}
     with open(JSON_F, 'r') as f:
         j = json.load(f)
+    index = 0
     for obj in j['obj']:
         region = (obj['dim'][1], obj['dim'][3], obj['dim'][0], obj['dim'][2])
-        crop_image(obj['f_name'], region=region)
-
-def crop_image(f_name, region):
+        crop_and_resize_image(obj['f_name'], region=region, index=index)
+        index += 1
+        
+def crop_and_resize_image(f_name, region, index):
     img_path = os.path.join(os.getcwd(), RAW_DATA_PATH, f_name)
+    if f_name.endswith('.jpg') or f_name.endswith('.png'):
+        f_name = f_name[:-4] + '_' + str(index) + f_name[-4:]
+    
     save_path = os.path.join(os.getcwd(), PROCESSED_DATA_PATH, f_name)
     try:
         img = Image.open(img_path)
-        print(NEW_SHAPE)
         img = img.crop(region).resize(NEW_SHAPE)
+        
         img.save(save_path)
     except:
         print("failed to process image")
+        exit(1)
 
 def parse_args():
     global RAW_DATA_PATH, PROCESSED_DATA_PATH, JSON_F, NEW_SHAPE
