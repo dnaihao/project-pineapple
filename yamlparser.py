@@ -26,17 +26,17 @@ with open ('labels.csv',mode='w') as w_file:
 							d={}
 							d['f_name']=doc['annotation']['filename']
 							d['label']=doc['annotation']['object'][i]['name']
-							d['size_x']=doc['annotation']['size']['height']
-							d['size_y']=doc['annotation']['size']['width']
-							d['dim']=[doc['annotation']['object'][i]['bndbox']['xmax'],doc['annotation']['object'][i]['bndbox']['xmin'],doc['annotation']['object'][i]['bndbox']['ymax'],doc['annotation']['object'][i]['bndbox']['ymin']]
+							d['size_x']=int(doc['annotation']['size']['height'])
+							d['size_y']=int(doc['annotation']['size']['width'])
+							d['dim']=[int(doc['annotation']['object'][i]['bndbox']['xmax']),int(doc['annotation']['object'][i]['bndbox']['xmin']),int(doc['annotation']['object'][i]['bndbox']['ymax']),int(doc['annotation']['object'][i]['bndbox']['ymin'])]
 							l.append(d)
 							csv_writer.writerow([doc['annotation']['filename'],doc['annotation']['object'][i]['name'],doc['annotation']['size']['height'],doc['annotation']['size']['width'],doc['annotation']['object'][i]['bndbox']['xmax'],doc['annotation']['object'][i]['bndbox']['xmin'],doc['annotation']['object'][i]['bndbox']['ymax'],doc['annotation']['object'][i]['bndbox']['ymin']])
 					except:
 						d={}
 						d['f_name']=doc['annotation']['filename']
 						d['label']='NA'
-						d['size_x']=doc['annotation']['size']['height']
-						d['size_y']=doc['annotation']['size']['width']
+						d['size_x']=int(doc['annotation']['size']['height'])
+						d['size_y']=int(doc['annotation']['size']['width'])
 						d['dim']=[]
 						l.append(d)	
 						csv_writer.writerow([doc['annotation']['filename'],'NA',doc['annotation']['size']['height'],doc['annotation']['size']['width'],0,0,0,0])
@@ -44,7 +44,7 @@ with open ('labels.csv',mode='w') as w_file:
 			except yaml.YAMLError as exc:
 				print(exc)
 	#print(c)
-	c+=1
+	c=c+1
 print(c)
 data['obj']=l
 with open('Mobility.json', 'w') as outfile:
