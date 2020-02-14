@@ -5,7 +5,6 @@ import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
-import time
 import json
 import os
 from PIL import Image
@@ -30,5 +29,3 @@ class VRUDataset(Dataset):
 
 if __name__ == "__main__":
     V = VRUDataset()
-    import ipdb; ipdb.set_trace()
-    a = 1
