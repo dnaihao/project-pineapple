@@ -1,2 +1,2 @@
 clean:
-	rm new.json done/*
+	rm -rf new.json done/*
