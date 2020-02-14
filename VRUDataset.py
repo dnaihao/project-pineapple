@@ -10,10 +10,11 @@ import os
 from PIL import Image
 
 class VRUDataset(Dataset):
-    def __init__(self, json_path="new.json", data_path="done"):
+    def __init__(self, json_path="new.json", data_path="done", transform=None):
         with open(json_path) as f:
             self.json = json.load(f)
         self.data_path = data_path
+        self.transform = transform
 
     def __len__(self):
         return len(self.json['obj'])
@@ -21,10 +22,12 @@ class VRUDataset(Dataset):
     def __getitem__(self, idx):
         img_name = self.json['obj'][idx]['f_name']
         img = Image.open(os.path.join(self.data_path, img_name))
-        return {
-            'image': img,
+        sample = {
+            'image': self.transform(img),
             'label': self.json['obj'][idx]['label']
         }
+        
+        return sample
 
 
 if __name__ == "__main__":
