@@ -30,5 +30,3 @@ class VRUDataset(Dataset):
 
 if __name__ == "__main__":
     V = VRUDataset()
-    import ipdb; ipdb.set_trace()
-    a = 1
