@@ -3,10 +3,10 @@ import os
 from PIL import Image
 import argparse
 
-RAW_DATA_PATH = "d"
-PROCESSED_DATA_PATH = "done"
-JSON_F = "my.json"
-NEW_SHAPE = (32, 32)
+RAW_DATA_PATH = "C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Images_RGB"
+PROCESSED_DATA_PATH = "C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Im"
+JSON_F = "C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Mobility.json"
+NEW_SHAPE = (100, 100)
 
 
 def gen_json():
@@ -37,16 +37,28 @@ def write_json(j):
 
 # process images and create updated json file
 def process_images():
+    new_j = {'obj':[]}
     j = {}
     with open(JSON_F, 'r') as f:
         j = json.load(f)
     index = 0
-    for obj in j['obj']:
-        region = (obj['dim'][1], obj['dim'][3], obj['dim'][0], obj['dim'][2])
-        f_name = crop_and_resize_image(obj['f_name'], region=region, index=index)
-        obj['f_name'] = f_name
-        index += 1
-    write_json(j)
+    print(j)
+    for idx, obj in enumerate(j['obj']):
+        if obj['label'] != 'NA':
+            region = (obj['dim'][1], obj['dim'][3], obj['dim'][0], obj['dim'][2])
+            f_name = crop_and_resize_image(obj['f_name'], region=region, index=index)
+            obj['f_name'] = f_name
+            new_j['obj'].append({
+                'f_name': f_name,
+                'label': obj['label'],
+                'size_x': obj['size_x'],
+                'size_y': obj['size_y'],
+                'dim': region
+                })
+            index += 1
+        if (idx % 100 == 0):
+            write_json(new_j)
+    write_json(new_j)
         
 def crop_and_resize_image(f_name, region, index):
     img_path = os.path.join(os.getcwd(), RAW_DATA_PATH, f_name)
@@ -67,14 +79,14 @@ def parse_args():
     global RAW_DATA_PATH, PROCESSED_DATA_PATH, JSON_F, NEW_SHAPE
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--shape", nargs=2, default=(32, 32), required=False)
-    parser.add_argument("-j", "--json", nargs=1, default="my.json", required=False)
+    parser.add_argument("-j", "--json", nargs='*', default="my.json", required=False)
     parser.add_argument("-r", "--raw", nargs=1, default="d", required=False)
     parser.add_argument("-p", "--processed", nargs=1, default="done", required=False)
     args = parser.parse_args()
-    RAW_DATA_PATH = args.raw
-    PROCESSED_DATA_PATH = args.processed
-    JSON_F = args.json
-    NEW_SHAPE = (int(args.shape[0]), int(args.shape[1]))
+    # RAW_DATA_PATH = args.raw
+    # PROCESSED_DATA_PATH = args.processed
+    # JSON_F = args.json
+    # NEW_SHAPE = (int(args.shape[0]), int(args.shape[1]))
 
 if __name__ == "__main__":
     parse_args()
