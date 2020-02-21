@@ -31,4 +31,4 @@ class VRUDataset(Dataset):
 
 
 if __name__ == "__main__":
-    V = VRUDataset()
+    V = VRUDataset(data_path="C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Im")
