@@ -8,7 +8,7 @@ from torch.utils.data import Dataset, DataLoader
 import torch.optim as optim
 import json
 import os
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 from PIL import Image
 import numpy as np
 
@@ -24,9 +24,11 @@ def train():
     train_set = DataLoader(train_set, batch_size=4, shuffle=4, num_workers=4)
 
     cnn = CNN()
-    criterion = nn.CrossEntropyLoss()
+    # criterion = nn.CrossEntropyLoss()
+    criterion = nn.MSELoss()
     optimizer = optim.SGD(cnn.parameters(), lr=0.001, momentum=0.9)
-    enc = OneHotEncoder()
+    # enc = OneHotEncoder()
+    enc = LabelEncoder()
     # train
     for epoch in range(EPOCH):  # loop over the dataset multiple times
         running_loss = 0.0
@@ -37,12 +39,8 @@ def train():
             labels = np.array(labels).reshape(-1, 1)
             print(labels)
             enc.fit(labels)
-            encodedLabels = enc.transform(labels).toarray()
-            encodedLabels = torch.Tensor(encodedLabels)
-            target_test = torch.empty(2, dtype=torch.long).random_(2)
-            print("AA")
-            print(target_test.shape)
-            print(encodedLabels.shape)
+            encodedLabels = enc.transform(labels)
+            encodedLabels = torch.Tensor(encodedLabels).unsqueeze(0)
             # import ipdb; ipdb.set_trace()
             optimizer.zero_grad()
             # forward + backward + optimize
@@ -50,6 +48,7 @@ def train():
             outputs = cnn(inputs)
             print(outputs.shape)
             # import ipdb; ipdb.set_trace()
+            print(outputs.shape, encodedLabels.shape)
             loss = criterion(outputs, encodedLabels)
             loss.backward()
             optimizer.step()
