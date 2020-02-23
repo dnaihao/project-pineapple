@@ -114,6 +114,11 @@ def parse_args():
     # NEW_SHAPE = (int(args.shape[0]), int(args.shape[1]))
 
 if __name__ == "__main__":
+    ans = ""
+    if os.path.exists("val.json") or os.path.exists("val.json"):
+        ans = input("YOU SURE??? ")
+    if (ans != "pineapple"):
+        exit()
     parse_args()
     process_images()
 
