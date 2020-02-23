@@ -15,13 +15,13 @@ import numpy as np
 from VRUDataset import VRUDataset
 from models.cnn import CNN
 
-EPOCH = 1
+EPOCH = 3
 
 
 def train():
     transform = transforms.Compose([transforms.ToTensor()])
     train_set = VRUDataset(transform=transform,data_path="C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Im")
-    train_set = DataLoader(train_set, batch_size=5, shuffle=5, num_workers=1)
+    train_set = DataLoader(train_set,shuffle=True)
 
     cnn = CNN()
     # criterion = nn.CrossEntropyLoss()
@@ -38,6 +38,11 @@ def train():
             inputs = data.get("image")
             labels = data.get("label")
             labels = np.array(labels).reshape(-1, 1)
+            #if torch.cuda.is_available():
+                #inputs = inputs.cuda()
+                #labels = labels.cuda()
+                #x_val = x_val.cuda()
+                #y_val = y_val.cuda()
             #print(labels)
             enc.fit(labels)
             encodedLabels = enc.transform(labels)
