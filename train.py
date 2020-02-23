@@ -20,7 +20,8 @@ EPOCH = 3
 
 def train():
     transform = transforms.Compose([transforms.ToTensor()])
-    train_set = VRUDataset(transform=transform,data_path="C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Im")
+    train_set = VRUDataset(transform=transform,data_path="C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Train")
+    val_set = VRUDataset(transform=transform,data_path="C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Val")
     train_set = DataLoader(train_set,shuffle=True)
 
     cnn = CNN()
@@ -29,6 +30,7 @@ def train():
     optimizer = optim.SGD(cnn.parameters(), lr=0.001, momentum=0.9)
     # enc = OneHotEncoder()
     enc = LabelEncoder()
+    #cuda = torch.device('cuda')
     # train
     for epoch in range(EPOCH):  # loop over the dataset multiple times
         running_loss = 0.0
@@ -39,8 +41,8 @@ def train():
             labels = data.get("label")
             labels = np.array(labels).reshape(-1, 1)
             #if torch.cuda.is_available():
-                #inputs = inputs.cuda()
-                #labels = labels.cuda()
+                #inputs = torch.tensor(inputs).cuda()
+                #labels = torch.tensor(labels).cuda()
                 #x_val = x_val.cuda()
                 #y_val = y_val.cuda()
             #print(labels)
@@ -51,7 +53,8 @@ def train():
             optimizer.zero_grad()
             # forward + backward + optimize
             #print(inputs.shape)
-            outputs = cnn(inputs)
+            train_outputs = cnn(inputs)
+            
             #print(outputs.shape)
             # import ipdb; ipdb.set_trace()
             #print(outputs.shape, encodedLabels.shape)
@@ -60,10 +63,29 @@ def train():
             optimizer.step()
             # print statistics
             running_loss += loss.item()
-            if i % 20 == 19:    # print every 2000 mini-batches
-                print('[%d, %5d] loss: %.3f' %
-                    (epoch + 1, i + 1, running_loss / 20))
+            if i % 200 == 199:    # print every 2000 mini-batches
+                print('[%d, %5d] train loss: %.3f' %
+                    (epoch + 1, i + 1, running_loss / 200))
                 running_loss = 0.0
+        running_loss=0.0
+        for i, data in enumerate(val_set,0):
+            inputs = data.get("image")
+            labels = data.get("label")
+            labels = np.array(labels).reshape(-1, 1)
+            #if torch.cuda.is_available():
+                #inputs = torch.tensor(inputs).cuda()
+                #labels = torch.tensor(labels).cuda()
+            enc.fit(labels)
+            encodedLabels = enc.transform(labels)
+            val_encodedLabels = torch.Tensor(encodedLabels).unsqueeze(0)
+            val_outputs=cnn(inputs)
+            val_loss=criterion(val_outputs,val_encodedLabels)
+            running_loss+= val_loss.item()
+            if i % 200 == 199:    # print every 2000 mini-batches
+                print('[%d, %5d] validation loss: %.3f' %
+                    (epoch + 1, i + 1, running_loss / 200))
+                running_loss = 0.0
+            
     print('Finished Training')
     
 

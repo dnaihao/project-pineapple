@@ -8,7 +8,7 @@ PROCESSED_TRAIN_DATA_PATH = "C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Data
 PROCESSED_VAL_DATA_PATH = "C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Val"
 JSON_F = "C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Mobility.json"
 NEW_SHAPE = (100, 100)
-TRAIN_TO_VAL_RATIO = 0.01
+TRAIN_TO_VAL_RATIO = 0.7
 
 
 def gen_json():
@@ -55,7 +55,7 @@ def process_images():
         if (idx < divide):
             if obj['label'] != 'NA':
                 region = (obj['dim'][1], obj['dim'][3], obj['dim'][0], obj['dim'][2])
-                f_name = crop_and_resize_image(obj['f_name'], region=region, index=index, train=true)
+                f_name = crop_and_resize_image(obj['f_name'], region=region, index=index, train=True)
                 obj['f_name'] = f_name
                 train_j['obj'].append({
                     'f_name': f_name,
