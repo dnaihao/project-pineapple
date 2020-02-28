@@ -27,8 +27,8 @@ def train():
     val_set = DataLoader(val_set,shuffle=True,batch_size=32)
 
     cnn = CNN()
-    # criterion = nn.CrossEntropyLoss()
-    criterion = nn.MSELoss()
+    criterion = nn.CrossEntropyLoss()
+    #criterion = nn.MSELoss()
     optimizer = optim.SGD(cnn.parameters(), lr=0.001, momentum=0.9)
     if torch.cuda.is_available():
         cnn=cnn.cuda()
@@ -58,10 +58,12 @@ def train():
 
             encodedLabels = torch.Tensor(encodedLabels).unsqueeze(0)
             encodedLabels=np.transpose(encodedLabels)
+            encodedLabels = encodedLabels.type(torch.cuda.LongTensor)
+            #encodedLabels=encodedLabels.astype(long)
             if torch.cuda.is_available():
                 inputs = torch.tensor(inputs).cuda()
                 encodedLabels = torch.tensor(encodedLabels).cuda()
-            
+                
             # import ipdb; ipdb.set_trace()
             optimizer.zero_grad()
             #if torch.cuda.is_available():
@@ -76,14 +78,21 @@ def train():
             #print(encodedLabels.shape)
             #print(outputs.shape)
             # import ipdb; ipdb.set_trace()
-            loss = criterion(train_outputs, encodedLabels)
+            #print (train_outputs.cpu())
+            print(encodedLabels.cpu())
+
+            train_outputs=train_outputs.cpu()
+            train_pred=np.argmax(train_outputs.detach().numpy(),axis=1)
+            print(train_pred)
+
+            train_pred=torch.tensor(train_pred).cuda()
+            loss = criterion(torch.tensor(train_outputs).cuda(), encodedLabels[:,0])
+            train_pred=train_pred.cpu()
             train_losses.append(loss)
             loss.backward()
             optimizer.step()
             encodedLabels=encodedLabels.cpu()
             inputs=inputs.cpu()
-            train_outputs=train_outputs.cpu()
-            train_pred=np.argmax(train_outputs.detach().numpy(),axis=1)
             #train_acc.append(train_pred)\
             #print(train_pred)
             #print(encodedLabels[:,0])
