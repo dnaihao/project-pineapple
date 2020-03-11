@@ -28,6 +28,7 @@ def train(net, train_set, NUM_EPOCHS):
 	
 	net = Autoencoder()
 	criterion = nn.MSELoss()
+	train_loss=[]
 	optimizer = optim.Adam(net.parameters(), lr=LEARNING_RATE)
 	if torch.cuda.is_available():
 		net=net.cuda()
@@ -52,10 +53,15 @@ def train(net, train_set, NUM_EPOCHS):
 		print('Epoch {} of {}, Train Loss: {:.3f}'.format(
 			epoch+1, NUM_EPOCHS, loss))
  
-		if epoch % 5 == 0:
-			save_decoded_image(outputs.cpu().data, epoch)
+		#if epoch % 5 == 0:
+			#save_decoded_image(outputs.cpu().data, epoch)
  
 	return train_loss
+
+def save_decoded_image(img, epoch):
+    img = img.view(img.size(0), 1, 28, 28)
+    save_image(img, './FashionMNIST_Images/linear_ae_image{}.png'.format(epoch))
+
 
 def test_image_reconstruction(net, testloader):
 	for batch in testloader:
