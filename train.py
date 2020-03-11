@@ -27,8 +27,8 @@ def train():
     val_set = DataLoader(val_set,shuffle=True,batch_size=32)
 
     cnn = CNN()
-    criterion = nn.CrossEntropyLoss()
-    #criterion = nn.MSELoss()
+    #criterion = nn.CrossEntropyLoss()
+    criterion = nn.MSELoss()
     optimizer = optim.SGD(cnn.parameters(), lr=0.001, momentum=0.9)
     if torch.cuda.is_available():
         cnn=cnn.cuda()
@@ -79,11 +79,11 @@ def train():
             #print(outputs.shape)
             # import ipdb; ipdb.set_trace()
             #print (train_outputs.cpu())
-            print(encodedLabels.cpu())
+            #print(encodedLabels.cpu())
 
             train_outputs=train_outputs.cpu()
             train_pred=np.argmax(train_outputs.detach().numpy(),axis=1)
-            print(train_pred)
+            #print(train_pred)
 
             train_pred=torch.tensor(train_pred).cuda()
             loss = criterion(torch.tensor(train_outputs).cuda(), encodedLabels[:,0])
