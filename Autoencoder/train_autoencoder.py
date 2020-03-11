@@ -14,10 +14,12 @@ from torchvision.utils import save_image
 from autoencoder import Autoencoder
 from VRUDataset import VRUDataset
 
-NUM_EPOCHS = 50
+NUM_EPOCHS = 8
 LEARNING_RATE = 1e-3
 BATCH_SIZE = 32
 net = Autoencoder()
+if torch.cuda.is_available():
+		net=net.cuda()
 transform = transforms.Compose([transforms.ToTensor(),transforms.Normalize((0.5,), (0.5,))])
 train_set = VRUDataset(transform=transform,json_path="C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Code\\project-pineapple\\train.json",data_path="C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Train")
 val_set = VRUDataset(transform=transform,json_path="C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Code\\project-pineapple\\val.json",data_path="C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Val")
@@ -25,7 +27,7 @@ train_set = DataLoader(train_set,shuffle=True,batch_size=BATCH_SIZE)
 val_set = DataLoader(val_set,shuffle=True,batch_size=BATCH_SIZE)
 
 def train(net, train_set, NUM_EPOCHS):
-	
+	print("Started training")
 	net = Autoencoder()
 	criterion = nn.MSELoss()
 	train_loss=[]
@@ -52,25 +54,27 @@ def train(net, train_set, NUM_EPOCHS):
 		train_loss.append(loss)
 		print('Epoch {} of {}, Train Loss: {:.3f}'.format(
 			epoch+1, NUM_EPOCHS, loss))
- 
+
 		#if epoch % 5 == 0:
 			#save_decoded_image(outputs.cpu().data, epoch)
- 
+	print("Finished training")
 	return train_loss
 
 def save_decoded_image(img, epoch):
     img = img.view(img.size(0), 1, 28, 28)
-    save_image(img, './FashionMNIST_Images/linear_ae_image{}.png'.format(epoch))
+    save_image(img, './Decoded_train/linear_ae_image{}.png'.format(epoch))
 
 
 def test_image_reconstruction(net, testloader):
+	if torch.cuda.is_available():
+		net=net.cuda()
 	for batch in testloader:
-		img, _ = batch
-		img = img.to(device)
+		img = batch.get("image")
+		img = img.cuda()
 		img = img.view(img.size(0), -1)
 		outputs = net(img)
-		outputs = outputs.view(outputs.size(0), 1, 28, 28).cpu().data
-		save_image(outputs, 'fashionmnist_reconstruction.png')
+		outputs = outputs.view(outputs.size(0), 3, 100, 100).cpu().data
+		save_image(outputs, '.\\Results\\wheelchair.png')
 		break
 
 
@@ -82,6 +86,7 @@ def train_autoencoder():
 	plt.xlabel('Epochs')
 	plt.ylabel('Loss')
 	plt.savefig('deep_ae_wheechair.png')
+	test_image_reconstruction(net, val_set)
  
 
 if __name__ == "__main__":
