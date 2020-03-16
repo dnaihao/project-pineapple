@@ -57,14 +57,24 @@ def process_images():
                 region = (obj['dim'][1], obj['dim'][3], obj['dim'][0], obj['dim'][2])
                 f_name = crop_and_resize_image(obj['f_name'], region=region, index=index, train=True)
                 obj['f_name'] = f_name
-                train_j['obj'].append({
-                    'f_name': f_name,
-                    'label': obj['label'],
-                    'size_x': obj['size_x'],
-                    'size_y': obj['size_y'],
-                    'dim': region
-                    })
-                index += 1
+                if obj['label']=='wheelchair':
+                    train_j['obj'].append({
+                        'f_name': f_name,
+                        'label': obj['label'],
+                        'size_x': obj['size_x'],
+                        'size_y': obj['size_y'],
+                        'dim': region
+                        })
+                    index += 1
+                else:
+                    train_j['obj'].append({
+                        'f_name': f_name,
+                        'label': 'not_wheelchair',
+                        'size_x': obj['size_x'],
+                        'size_y': obj['size_y'],
+                        'dim': region
+                        })
+                    index += 1
             if (idx % 100 == 0):
                 write_json(train_j, train=True)
         else:
@@ -72,14 +82,24 @@ def process_images():
                 region = (obj['dim'][1], obj['dim'][3], obj['dim'][0], obj['dim'][2])
                 f_name = crop_and_resize_image(obj['f_name'], region=region, index=index, train=False)
                 obj['f_name'] = f_name
-                val_j['obj'].append({
-                    'f_name': f_name,
-                    'label': obj['label'],
-                    'size_x': obj['size_x'],
-                    'size_y': obj['size_y'],
-                    'dim': region
-                    })
-                index += 1
+                if obj['label']=='wheelchair':
+                    val_j['obj'].append({
+                        'f_name': f_name,
+                        'label': obj['label'],
+                        'size_x': obj['size_x'],
+                        'size_y': obj['size_y'],
+                        'dim': region
+                        })
+                    index += 1
+                else:
+                    val_j['obj'].append({
+                        'f_name': f_name,
+                        'label': 'not_wheelchair',
+                        'size_x': obj['size_x'],
+                        'size_y': obj['size_y'],
+                        'dim': region
+                        })
+                    index += 1
             if (idx % 100 == 0):
                 write_json(val_j, train=False)
         
