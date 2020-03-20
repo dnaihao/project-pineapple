@@ -15,6 +15,7 @@ import pandas as pd
 import random 
 import pickle as pkl
 import itertools
+import json
 
 class test_net(nn.Module):
     def __init__(self, num_layers, input_size):
@@ -78,6 +79,7 @@ def arg_parse():
 
 if __name__ ==  '__main__':
     args = arg_parse()
+    j = {}
     
     if not os.path.exists("yolov3.weights"):
         bashCommand = "wget https://pjreddie.com/media/files/yolov3.weights"
@@ -152,7 +154,7 @@ if __name__ ==  '__main__':
         os.makedirs(args.det)
         
     load_batch = time.time()
-    
+
     batches = list(map(prep_image, imlist, [inp_dim for x in range(len(imlist))]))
     im_batches = [x[0] for x in batches]
     orig_ims = [x[1] for x in batches]
@@ -287,19 +289,43 @@ if __name__ ==  '__main__':
     
     draw = time.time()
 
-    def get_coord(c1, c2):
+    def get_coord(c1, c2, idx):
         # c1 upper left, c2 lower right
-        print("up: ", c1[1].int())
-        print("down: ", c2[1].int())
-        print("left: ", c1[0].int())
-        print("right: ", c2[0].int())
+        print("up: ", c1[1])
+        print("down: ", c2[1])
+        print("left: ", c1[0])
+        print("right: ", c2[0])
         print("")
+        up = c1[1]
+        down = c2[1]
+        left = c1[0]
+        right = c2[0]
+        img_name = os.path.basename(imlist[idx])
+        if img_name not in j:
+            j[img_name] = [
+                {
+                    "up": up,
+                    "down": down,
+                    "left": left,
+                    "right": right
+                }
+            ]
+        else:
+            j[img_name].append(
+                {
+                    "up": up,
+                    "down": down,
+                    "left": left,
+                    "right": right
+                }
+            )
     
     def write(x, batches, results):
-        c1 = tuple(x[1:3].int())
-        c2 = tuple(x[3:5].int())
-        get_coord(c1, c2)
+        
+        c1 = tuple((x[1].int().item(), x[2].int().item()))
+        c2 = tuple((x[3].int().item(), x[4].int().item()))
         img = results[int(x[0])]
+        get_coord(c1, c2, int(x[0]))
         cls = int(x[-1])
         label = "{0}".format(classes[cls])
         color = random.choice(colors)
@@ -314,13 +340,17 @@ if __name__ ==  '__main__':
     # c1 = tuple(output[0][1:3].int())
     # c2 = tuple(output[0][3:5].int())
     # print(c1)
-    # print(c2)     
+    # print(c2)
+    print(len(output)) 
     list(map(lambda x: write(x, im_batches, orig_ims), output))
       
     det_names = pd.Series(imlist).apply(lambda x: "{}/det_{}".format(args.det,x.split("/")[-1]))
     
     list(map(cv2.imwrite, det_names, orig_ims))
-    
+
+    with open("detected.json", 'w') as f:
+        json.dump(j, f)
+
     end = time.time()
     
     print()
