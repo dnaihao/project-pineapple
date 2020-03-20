@@ -27,16 +27,16 @@ def train():
     val_set = DataLoader(val_set,shuffle=True,batch_size=32)
 
     cnn = CNN()
-    # criterion = nn.CrossEntropyLoss()
+    #criterion = nn.CrossEntropyLoss()
     criterion = nn.MSELoss()
-    optimizer = optim.SGD(cnn.parameters(), lr=0.001, momentum=0.9)
+    optimizer = optim.SGD(cnn.parameters(), lr=0.01, momentum=0.9)
     if torch.cuda.is_available():
         cnn=cnn.cuda()
         criterion=criterion.cuda()
 
     # enc = OneHotEncoder()
     enc = LabelEncoder()
-    classes=['wheelchair','walking_frame','crutches','person','push_wheelchair']
+    classes=['wheelchair','not_wheelchair']
     enc.fit(classes)
     # empty list to store training losses
     train_losses = []
@@ -53,7 +53,10 @@ def train():
             inputs = data.get("image")
             labels = data.get("label")
             labels = np.array(labels).reshape(-1, 1)
-            
+            #if torch.cuda.is_available():
+                #inputs = torch.tensor(inputs).cuda()
+                #labels = torch.tensor(labels).cuda()
+
             encodedLabels = enc.transform(labels)
 
             encodedLabels = torch.Tensor(encodedLabels).unsqueeze(0)
@@ -61,7 +64,7 @@ def train():
             if torch.cuda.is_available():
                 inputs = torch.tensor(inputs).cuda()
                 encodedLabels = torch.tensor(encodedLabels).cuda()
-            
+
             # import ipdb; ipdb.set_trace()
             optimizer.zero_grad()
             #if torch.cuda.is_available():
@@ -71,6 +74,7 @@ def train():
             #print(inputs.shape)
 
             train_outputs = cnn(inputs)
+
             #print(train_outputs.shape)
 
             #print(encodedLabels.shape)
@@ -90,20 +94,26 @@ def train():
             encodedLabels = encodedLabels[:, 0]
             for a, b in zip(train_pred, encodedLabels):
                 if a == b:
-                    count += 1
+                    count =count+1
             #if (train_pred==encodedLabels[0]):
              #   count+=1
             # print statistics
             running_loss += loss.item()
+
             if i % 100 == 99:    # print every 2000 mini-batches
                 print('[%d, %5d] train loss: %.3f' %
-                    (epoch + 1, i + 1, running_loss / 100.0))
+                    (epoch + 1, (i + 1)*3200, running_loss / 100))
                 running_loss = 0.0
                 #softmax=torch.exp(train_outputs)
                 #prob=list(softmax.numpy())
+                #train_pred=np.argmax(prob,axis=1)
                 #train_pred=np.argmax(train_outputs.detach().numpy(),axis=1)
                 #print(train_pred)
                 #train_accuracy=accuracy_score(labels,train_pred)
+                #print("Training Accuracy = ",train_accuracy)
+                '''plt.plot(train_losses, label='Training loss')
+                plt.legend()
+                plt.show()'''
                 print("Training Accuracy = ",count/3200.0)
                 count=0
                 if (i%18000)==17999:
