@@ -30,7 +30,7 @@ class test_net(nn.Module):
         return fwd(x)
         
 def get_test_input(input_dim, CUDA):
-    img = cv2.imread("imgs/img1.jpg")
+    img = cv2.imread("imgs/dog.jpg")
     img = cv2.resize(img, (input_dim, input_dim)) 
     img_ =  img[:,:,::-1].transpose((2,0,1))
     img_ = img_[np.newaxis,:,:,:]/255.0
@@ -287,10 +287,18 @@ if __name__ ==  '__main__':
     
     draw = time.time()
 
-
+    def get_coord(c1, c2):
+        # c1 upper left, c2 lower right
+        print("up: ", c1[1].int())
+        print("down: ", c2[1].int())
+        print("left: ", c1[0].int())
+        print("right: ", c2[0].int())
+        print("")
+    
     def write(x, batches, results):
         c1 = tuple(x[1:3].int())
         c2 = tuple(x[3:5].int())
+        get_coord(c1, c2)
         img = results[int(x[0])]
         cls = int(x[-1])
         label = "{0}".format(classes[cls])
@@ -302,7 +310,11 @@ if __name__ ==  '__main__':
         cv2.putText(img, label, (c1[0], c1[1] + t_size[1] + 4), cv2.FONT_HERSHEY_PLAIN, 1, [225,255,255], 1)
         return img
     
-            
+    # print("======")
+    # c1 = tuple(output[0][1:3].int())
+    # c2 = tuple(output[0][3:5].int())
+    # print(c1)
+    # print(c2)     
     list(map(lambda x: write(x, im_batches, orig_ims), output))
       
     det_names = pd.Series(imlist).apply(lambda x: "{}/det_{}".format(args.det,x.split("/")[-1]))
