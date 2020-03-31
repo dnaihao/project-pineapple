@@ -7,18 +7,18 @@ class Autoencoder(nn.Module):
         super(Autoencoder, self).__init__()
  
         # encoder
-        self.enc1 = nn.Linear(in_features=30000, out_features=256)
-        self.enc2 = nn.Linear(in_features=256, out_features=128)
-        self.enc3 = nn.Linear(in_features=128, out_features=64)
-        self.enc4 = nn.Linear(in_features=64, out_features=32)
-        self.enc5 = nn.Linear(in_features=32, out_features=16)
+        self.enc1 = nn.Linear(in_features=30000, out_features=10000)
+        self.enc2 = nn.Linear(in_features=10000, out_features=2048)
+        self.enc3 = nn.Linear(in_features=2048, out_features=256)
+        self.enc4 = nn.Linear(in_features=256, out_features=64)
+        self.enc5 = nn.Linear(in_features=64, out_features=16)
  
         # decoder 
-        self.dec1 = nn.Linear(in_features=16, out_features=32)
-        self.dec2 = nn.Linear(in_features=32, out_features=64)
-        self.dec3 = nn.Linear(in_features=64, out_features=128)
-        self.dec4 = nn.Linear(in_features=128, out_features=256)
-        self.dec5 = nn.Linear(in_features=256, out_features=30000)
+        self.dec1 = nn.Linear(in_features=16, out_features=64)
+        self.dec2 = nn.Linear(in_features=64, out_features=256)
+        self.dec3 = nn.Linear(in_features=256, out_features=2048)
+        self.dec4 = nn.Linear(in_features=2048, out_features=10000)
+        self.dec5 = nn.Linear(in_features=10000, out_features=30000)
  
     def forward(self, x):
         x = F.relu(self.enc1(x))

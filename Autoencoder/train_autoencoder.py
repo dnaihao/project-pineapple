@@ -14,7 +14,7 @@ from torchvision.utils import save_image
 from autoencoder import Autoencoder
 from VRUDataset import VRUDataset
 
-NUM_EPOCHS = 8
+NUM_EPOCHS = 3
 LEARNING_RATE = 1e-3
 BATCH_SIZE = 32
 net = Autoencoder()
@@ -74,8 +74,7 @@ def test_image_reconstruction(net, testloader):
 		img = img.view(img.size(0), -1)
 		outputs = net(img)
 		outputs = outputs.view(outputs.size(0), 3, 100, 100).cpu().data
-		save_image(outputs, '.\\Results\\wheelchair.png')
-		break
+		save_image(outputs, '.\\Results\\img.png')
 
 
 def train_autoencoder():

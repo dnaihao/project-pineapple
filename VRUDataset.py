@@ -18,7 +18,6 @@ class VRUDataset(Dataset):
 
     def __len__(self):
         return len(self.json['obj'])
-    
     def __getitem__(self, idx):
         img_name = self.json['obj'][idx]['f_name']
         img = Image.open(os.path.join(self.data_path, img_name))

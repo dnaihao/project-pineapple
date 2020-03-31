@@ -4,7 +4,7 @@ import torchvision
 import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 import torch.optim as optim
 import json
 import os
@@ -16,7 +16,7 @@ from sklearn.metrics import accuracy_score
 from VRUDataset import VRUDataset
 from models.cnn import CNN
 
-EPOCH = 30
+EPOCH = 3
 
 def encode(labels):
     encodedLabels = []
@@ -28,25 +28,49 @@ def encode(labels):
     encodedLabels= torch.tensor(encodedLabels)
     return encodedLabels
 
+'''def save_model():
+    torch.save({
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'loss': loss,
+            ...
+            }, PATH)'''
+def max_output(out):
+    ret_val=[]
+    out=out.tolist()
+    for row in out:
+        print(row)
+        if row[0]>row[1]:
+            ret_val.append[0]
+        else:
+            ret_val.append[1]
+    ret_val=torch.tensor(ret_val)
+    return out
+
 def train():
+    print("Starting Train")
+    
     transform = transforms.Compose([transforms.ToTensor()])
     train_set = VRUDataset(transform=transform,json_path="train.json",data_path="C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Train")
     val_set = VRUDataset(transform=transform,json_path="val.json",data_path="C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Val")
-    train_set = DataLoader(train_set,shuffle=True,batch_size=32)
-    val_set = DataLoader(val_set,shuffle=True,batch_size=32)
-    print(len(val_set))
+    train_set = DataLoader(train_set,batch_size=48,shuffle=True)
+    val_set = DataLoader(val_set,shuffle=True,batch_size=48)
+
     cnn = CNN()
-    criterion = nn.CrossEntropyLoss()
+    weight = torch.FloatTensor([0.8, 4.0]).cuda()
+    criterion = nn.CrossEntropyLoss(weight=weight)
+    
     #criterion = nn.MSELoss()
-    optimizer = optim.SGD(cnn.parameters(), lr=0.0001,momentum=0.9)
+    optimizer = optim.Adam(cnn.parameters(), lr=0.0001)
     if torch.cuda.is_available():
         cnn=cnn.cuda()
         criterion=criterion.cuda()
-
+        weight=weight.cuda()
     # enc = OneHotEncoder()
     enc = LabelEncoder()
-    classes=['wheelchair','not_wheelchair']
-    enc.fit(classes)
+    #classes=['wheelchair','not_wheelchair']
+    #enc.fit(classes)
     # empty list to store training losses
     train_losses = []
     # empty list to store validation losses
@@ -54,6 +78,12 @@ def train():
     #cuda = torch.device('cuda')
     count=0
     val_count=0
+    positive_count=0
+    negative_count=0
+    false_positive=0
+    false_negative=0
+    true_positive=0
+    true_negative=0
     # train
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     for epoch in range(EPOCH):  # loop over the dataset multiple times
@@ -80,7 +110,13 @@ def train():
             train_outputs = cnn(inputs)
             #val_outputs= cnn(val_inputs)
             # import ipdb; ipdb.set_trace()
-            loss = criterion(train_outputs, torch.max(encodedLabels, 1)[1])
+            #print(train_outputs.cpu())
+            #print(torch.max(encodedLabels, 1)[0])
+            #print(torch.max(train_outputs.cpu(), 1).indices.reshape(-1,1))
+            
+            loss = criterion(train_outputs,torch.max(encodedLabels, 1)[0])
+            #loss= loss*weight
+            #loss=loss.mean()
             train_losses.append(loss)
             loss.backward()
             optimizer.step()
@@ -91,10 +127,24 @@ def train():
             encodedLabels = encodedLabels[:, 0]
             for a, b in zip(train_pred, encodedLabels):
                 if a == b:
-                    count =count+1
+                    if a==0: 
+                        true_negative= true_negative+1
+                    else: 
+                        true_positive = true_positive+1
+                    count= count+1
+                if b==1:
+                    positive_count = positive_count+1 
+                    if a!=1:
+                        false_negative = false_negative+1
+                else:
+                    negative_count = negative_count+1
+                if a==1:
+                    if b!=1:
+                        false_positive = false_positive+1
             running_loss += loss.item()
 
             if i % 100 == 99:    # print every 2000 mini-batches
+                print()
                 print('[%d, %5d] train loss: %.3f' %
                     (epoch + 1, (i + 1), running_loss / 100))
                 running_loss = 0.0
@@ -103,10 +153,25 @@ def train():
                 '''plt.plot(train_losses, label='Training loss')
                 plt.legend()
                 plt.show()'''
-                print("Training Accuracy = ",count/3200.0)
-                count=0
-                ## Validation Below
 
+                print("Percentage of Wheelchairs = ", positive_count/4800.0)
+                print("Training Accuracy = ",count/4800.0)
+                print("True Positive % = ",true_positive/4800.0)
+                print("True Negative % = ",true_negative/4800.0)
+                print("False Positive % = ", false_positive/4800.0)
+                print("False Negative % = ",false_negative/4800.0)
+                
+                count=0
+                positive_count=0
+                negative_count=0
+                false_positive=0
+                false_negative=0
+                true_negative=0
+                true_positive=0
+                ## Validation Below
+                torch.cuda.empty_cache()
+                torch.no_grad()
+                val_count=0
                 for it, val_data in enumerate(val_set,0):
                     val_inputs = val_data.get("image")
                     val_labels = val_data.get("label")
@@ -117,16 +182,16 @@ def train():
                         val_encodedLabels = torch.tensor(val_encodedLabels).cuda()
                     val_outputs=cnn(val_inputs)
                     val_encodedLabels=val_encodedLabels.cpu()
-                    val_inputs=val_inputs.cpu()
                     val_pred=np.argmax(train_outputs.detach().numpy(),axis=1)
                     val_encodedLabels = val_encodedLabels[:, 0]
                     for a, b in zip(val_pred, val_encodedLabels):
                         if a == b:
                             val_count += 1
-                    #torch.cuda.empty_cache()
-                    #torch.no_grad()
-                print('Validation Accuracy = %.3f'  % (val_count/(32*len(val_set))))
+                    
+                print('Validation Accuracy = %.3f'  % (val_count/(48*len(val_set))))
+                print()
                 val_count=0
+
 
 
             
