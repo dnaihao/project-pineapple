@@ -15,6 +15,8 @@ import numpy as np
 from sklearn.metrics import accuracy_score
 from VRUDataset import VRUDataset
 from models.cnn import CNN
+import copy
+import pickle
 
 EPOCH = 3
 
@@ -28,25 +30,6 @@ def encode(labels):
     encodedLabels= torch.tensor(encodedLabels)
     return encodedLabels
 
-'''def save_model():
-    torch.save({
-            'epoch': epoch,
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
-            'loss': loss,
-            ...
-            }, PATH)'''
-def max_output(out):
-    ret_val=[]
-    out=out.tolist()
-    for row in out:
-        print(row)
-        if row[0]>row[1]:
-            ret_val.append[0]
-        else:
-            ret_val.append[1]
-    ret_val=torch.tensor(ret_val)
-    return out
 
 def train():
     print("Starting Train")
@@ -190,7 +173,6 @@ def train():
                     
                 print('Validation Accuracy = %.3f'  % (val_count/(48*len(val_set))))
                 print()
-                val_count=0
 
 
 
