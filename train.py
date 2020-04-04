@@ -37,7 +37,7 @@ def train():
     transform = transforms.Compose([transforms.ToTensor()])
     train_set = VRUDataset(transform=transform,json_path="train.json",data_path="C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Train")
     val_set = VRUDataset(transform=transform,json_path="val.json",data_path="C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Val")
-    train_set = DataLoader(train_set,batch_size=48,shuffle=True)
+    train_set = DataLoader(train_set,batch_size=32,shuffle=True)
     val_set = DataLoader(val_set,shuffle=True,batch_size=48)
 
     cnn = CNN()
@@ -47,6 +47,7 @@ def train():
     #criterion = nn.MSELoss()
     optimizer = optim.Adam(cnn.parameters(), lr=0.0001)
     if torch.cuda.is_available():
+        print("Using GPU")
         cnn=cnn.cuda()
         criterion=criterion.cuda()
         weight=weight.cuda()
@@ -137,12 +138,12 @@ def train():
                 plt.legend()
                 plt.show()'''
 
-                print("Percentage of Wheelchairs = ", positive_count/4800.0)
-                print("Training Accuracy = ",count/4800.0)
-                print("True Positive % = ",true_positive/4800.0)
-                print("True Negative % = ",true_negative/4800.0)
-                print("False Positive % = ", false_positive/4800.0)
-                print("False Negative % = ",false_negative/4800.0)
+                print("Percentage of Wheelchairs = ", positive_count/3200.0)
+                print("Training Accuracy = ",count/3200.0)
+                print("True Positive % = ",true_positive/3200.0)
+                print("True Negative % = ",true_negative/3200.0)
+                print("False Positive % = ", false_positive/3200.0)
+                print("False Negative % = ",false_negative/3200.0)
                 
                 count=0
                 positive_count=0
@@ -155,26 +156,26 @@ def train():
                 torch.cuda.empty_cache()
                 torch.no_grad()
                 val_count=0
-                for it, val_data in enumerate(val_set,0):
-                    val_inputs = val_data.get("image")
-                    val_labels = val_data.get("label")
-                    val_labels = np.array(val_labels).reshape(-1, 1)
-                    val_encodedLabels=encode(val_labels)
-                    if torch.cuda.is_available():
-                        val_inputs = torch.tensor(val_inputs).cuda()
-                        val_encodedLabels = torch.tensor(val_encodedLabels).cuda()
-                    val_outputs=cnn(val_inputs)
-                    val_encodedLabels=val_encodedLabels.cpu()
-                    val_pred=np.argmax(train_outputs.detach().numpy(),axis=1)
-                    val_encodedLabels = val_encodedLabels[:, 0]
-                    for a, b in zip(val_pred, val_encodedLabels):
-                        if a == b:
-                            val_count += 1
-                    
-                print('Validation Accuracy = %.3f'  % (val_count/(48*len(val_set))))
-                print()
-
-
+                if (epoch%3==2):
+                    for it, val_data in enumerate(val_set,0):
+                        val_inputs = val_data.get("image")
+                        val_labels = val_data.get("label")
+                        val_labels = np.array(val_labels).reshape(-1, 1)
+                        val_encodedLabels=encode(val_labels)
+                        if torch.cuda.is_available():
+                            val_inputs = torch.tensor(val_inputs).cuda()
+                            val_encodedLabels = torch.tensor(val_encodedLabels).cuda()
+                        val_outputs=cnn(val_inputs)
+                        val_encodedLabels=val_encodedLabels.cpu()
+                        val_pred=np.argmax(train_outputs.detach().numpy(),axis=1)
+                        val_encodedLabels = val_encodedLabels[:, 0]
+                        for a, b in zip(val_pred, val_encodedLabels):
+                            if a == b:
+                                val_count += 1
+                        
+                    print('Validation Accuracy = %.3f'  % (val_count/(32*len(val_set))))
+                    print()
+                torch.save(cnn, 'model'+str(epoch+1)+'.pt')
 
             
         running_loss=0.0

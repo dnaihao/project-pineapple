@@ -32,6 +32,7 @@ class test_net(nn.Module):
         
 def get_test_input(input_dim, CUDA):
     img = cv2.imread("imgs/dog.jpg")
+    import ipdb; ipdb.set_trace()
     img = cv2.resize(img, (input_dim, input_dim)) 
     img_ =  img[:,:,::-1].transpose((2,0,1))
     img_ = img_[np.newaxis,:,:,:]/255.0
@@ -182,7 +183,7 @@ if __name__ ==  '__main__':
     
 
     write = False
-    model(get_test_input(inp_dim, CUDA), CUDA)
+   #model(get_test_input(inp_dim, CUDA), CUDA)
     
     start_det_loop = time.time()
     
