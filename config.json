@@ -1,3 +1,11 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:20ddce6e784f1212376e328e11cd371b66cc36d5050bd20e48ca335b4d65c17b
-size 244
+{
+    "image_path": "Dataset/images/",
+    "image_dim": 128,
+    "cnn": {
+        "checkpoint": "./checkpoints/cnn/",
+        "learning_rate": 1e-4,
+        "num_epochs": 40,
+        "batch_size": 128,
+        "num_classes": 5
+    }
+}
