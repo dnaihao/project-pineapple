@@ -18,7 +18,7 @@ from models.cnn import CNN
 import copy
 import pickle
 
-EPOCH = 3
+EPOCH = 25
 
 def encode(labels):
     encodedLabels = []
@@ -45,7 +45,7 @@ def train():
     criterion = nn.CrossEntropyLoss(weight=weight)
     
     #criterion = nn.MSELoss()
-    optimizer = optim.Adam(cnn.parameters(), lr=0.0001)
+    optimizer = optim.Adam(cnn.parameters(), lr=0.00001)
     if torch.cuda.is_available():
         print("Using GPU")
         cnn=cnn.cuda()
@@ -156,7 +156,7 @@ def train():
                 torch.cuda.empty_cache()
                 torch.no_grad()
                 val_count=0
-                if (epoch%3==2):
+                if (epoch%5==4):
                     for it, val_data in enumerate(val_set,0):
                         val_inputs = val_data.get("image")
                         val_labels = val_data.get("label")
@@ -175,7 +175,7 @@ def train():
                         
                     print('Validation Accuracy = %.3f'  % (val_count/(32*len(val_set))))
                     print()
-                torch.save(cnn, 'model'+str(epoch+1)+'.pt')
+                torch.save(cnn, './/Saved Models//model'+str(epoch+1)+'.pt')
 
             
         running_loss=0.0
