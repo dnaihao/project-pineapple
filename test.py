@@ -116,6 +116,8 @@ def run():
     new_js = {}
     for j in js:
         new_js[j] = process_bbox(j, js[j])
+    with open("new_bbox.json", 'w') as f:
+        json.dump(new_js, f)
     return new_js
 
 def get_args():
