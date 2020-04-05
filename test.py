@@ -15,6 +15,7 @@ from PIL import Image
 import numpy as np
 from sklearn.metrics import accuracy_score
 from VRUDataset import VRUDataset
+import argparse
 from models.cnn import CNN
 
 # from obj_det.darknet import Darknet
@@ -48,6 +49,7 @@ def crop_image_with_processed_bbox(img, j):
 def process_bbox(img, j):
     processed = []
     persons = []
+    person_obj = []
     person_range = set()
     for obj in j:
         if obj["label"] == "person":
@@ -57,6 +59,7 @@ def process_bbox(img, j):
             # if (float(len(this_person & person_range)) / float(len(this_person)) < NEW_PERSON_THRESH):
             person_range |= this_person
             persons.append(this_person)
+            person_obj.append(obj)
     for obj in j:
         if obj["label"] in POTENTIAL_LIST:
             def overlap(persons, obj):
@@ -68,19 +71,18 @@ def process_bbox(img, j):
                         if (float(len(this_obj & p)) / float(len(this_obj)) > OVERLAP_PERC):
                             processed.append({
                                 "label_debug": obj["label"],
-                                "up": 1,
-                                "down": 2,
-                                "left": 3,
-                                "right": 4
+                                "up": min(obj["up"], person_obj[i]["up"]),
+                                "down": max(obj["down"], person_obj[i]["down"]),
+                                "left": min(obj["left"], person_obj[i]["left"]),
+                                "right": max(obj["right"], person_obj[i]["right"])
                             })
+                            persons.pop(i)
+                            person_obj.pop(i)
+                            break;
             overlap(persons, obj)
-    blah = persons[0]
-    for i in persons:
-        blah &= i
-    print(blah)
-    print("should be zero: ", len(blah))
-    print(processed)
-    print(len(processed))
+            
+    # print(processed)
+    # print(len(processed))
     return processed
     pass
 
@@ -91,17 +93,40 @@ def run_obj_det():
                 python det.py --images imgs --det det && \
                 cd ..");
 
+def save_img_with_new_bbox(new_js):
+    for img_name in new_js:
+        img = cv2.imread(os.path.join(os.getcwd(), "obj_det/imgs/", img_name))
+        cv2.imshow(img_name, img)
+        for obj in new_js[img_name]:
+            print("an object!")
+            c1 = tuple((obj["left"], obj["up"]))
+            c2 = tuple((obj["right"], obj["down"]))
+            import pickle as pkl
+            import random
+            color = random.choice(pkl.load(open("obj_det/pallete", "rb")))
+            cv2.rectangle(img, c1, c2, color, 2)
+        cv2.imwrite("new_bbox/new_" + img_name, img)
+
 # interate list of image
 def run():
     # run_obj_det()
-    # something
     js = {}
     with open(JSON_F, 'r') as f:
         js = json.load(f)
     new_js = {}
     for j in js:
         new_js[j] = process_bbox(j, js[j])
-    pass
+    return new_js
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-b', action='store_true', help="save img w/ new bbox")
+    args = parser.parse_args()
+    return args
 
 if __name__ == "__main__":
-    run()
+    args = get_args()
+    new_js = run()
+    print(new_js)
+    if args.b:
+        save_img_with_new_bbox(new_js)
