@@ -94,6 +94,7 @@ def run_obj_det():
 # interate list of image
 def run():
     # run_obj_det()
+    # something
     js = {}
     with open(JSON_F, 'r') as f:
         js = json.load(f)
