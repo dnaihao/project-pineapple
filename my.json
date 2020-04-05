@@ -1,3 +1,1 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:ddb5d69e7d962536f8ddbfb29116f9eb000860bdecd96ac89cfb5264dd4ca047
-size 203
+{"obj": [{"f_name": "lol.png", "label": "dude", "size_x": 540, "size_y": 900, "dim": [180, 30, 180, 30]}, {"f_name": "ksk.png", "label": "eecs", "size_x": 540, "size_y": 900, "dim": [180, 30, 180, 30]}]}

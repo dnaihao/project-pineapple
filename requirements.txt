@@ -1,3 +1,3 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:de30c223688826140db32bde95a734e088c59a0a0acc3d17f36c9ca4d905c953
-size 34
+torch
+torchvision
+scikit-learn
