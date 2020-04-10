@@ -45,7 +45,7 @@ def train():
     criterion = nn.CrossEntropyLoss(weight=weight)
     
     #criterion = nn.MSELoss()
-    optimizer = optim.Adam(cnn.parameters(), lr=0.00001)
+    optimizer = optim.Adam(cnn.parameters(), lr=0.001)
     if torch.cuda.is_available():
         print("Using GPU")
         cnn=cnn.cuda()
@@ -173,7 +173,7 @@ def train():
                             if a == b:
                                 val_count += 1
                         
-                    print('Validation Accuracy = %.3f'  % (val_count/(32*len(val_set))))
+                    print('Validation Accuracy = %.3f'  % (val_count/(48*len(val_set))))
                     print()
                 torch.save(cnn, './/Saved Models//model'+str(epoch+1)+'.pt')
 
