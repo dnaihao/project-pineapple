@@ -17,6 +17,7 @@ from sklearn.metrics import accuracy_score
 from VRUDataset import VRUDataset
 import argparse
 from models.cnn import CNN
+from models.autoencoder import Autoencoder
 
 # from obj_det.darknet import Darknet
 # from obj_det.util import load_classes
@@ -34,7 +35,16 @@ OVERLAP_PERC = 0.5
 
 # feed image into classification algorithm and print result
 def classify_img():
-    pass
+    # Given an input image, classify the image with the classifier
+    # Input- img: H x W matrix
+    # 
+    # Output- label: label associated with the feeded image
+    classifier = Autoencoder()
+    # TODO: load parameters once Shubang done with the autoencoder
+    # TODO: classifier.load_param()
+    # TODO: is the output of Autoencoer the label?
+    # label = classifier(img)
+    # return label
 
 # crop and save image defined by all bbox in given json
 def crop_image_with_processed_bbox(img, j):
