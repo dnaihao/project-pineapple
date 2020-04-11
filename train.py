@@ -5,6 +5,7 @@ import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
+import torchvision.models as models
 import torch.optim as optim
 import json
 import os
@@ -38,10 +39,21 @@ def train():
     train_set = VRUDataset(transform=transform,json_path="train.json",data_path="C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Train")
     val_set = VRUDataset(transform=transform,json_path="val.json",data_path="C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Val")
     train_set = DataLoader(train_set,batch_size=32,shuffle=True)
-    val_set = DataLoader(val_set,shuffle=True,batch_size=48)
+    val_set = DataLoader(val_set,shuffle=True,batch_size=32)
 
-    cnn = CNN()
+    #cnn = CNN()
     weight = torch.FloatTensor([0.8, 4.0]).cuda()
+    cnn = models.vgg16(pretrained=True)
+    for param in cnn.parameters():
+        param.requires_grad=False
+
+    cnn.classifier[6]= nn.Sequential(
+                         nn.Linear(4096,256),
+                         nn.ReLU(), 
+                         nn.Dropout(0.4),
+                         nn.Linear(256,64),
+                         nn.Linear(64,2),
+                         nn.LogSoftmax(dim=1))
     criterion = nn.CrossEntropyLoss(weight=weight)
     
     #criterion = nn.MSELoss()
@@ -173,56 +185,15 @@ def train():
                             if a == b:
                                 val_count += 1
                         
-                    print('Validation Accuracy = %.3f'  % (val_count/(48*len(val_set))))
+                    print('Validation Accuracy = %.3f'  % (val_count/(32*len(val_set))))
                     print()
-                torch.save(cnn, './/Saved Models//model'+str(epoch+1)+'.pt')
+                if (epoch>4):
+                    torch.save(cnn, './/Saved Models//model'+str(epoch+1)+'.pt')
 
             
         running_loss=0.0
         count=0
         torch.cuda.empty_cache()
-        torch.no_grad()
-        '''for i, data in enumerate(val_set,0):
-            inputs = data.get("image")
-            labels = data.get("label")
-            labels = np.array(labels).reshape(-1, 1)
-
-            val_encodedLabels=encode(labels)
-            if torch.cuda.is_available():
-                inputs = torch.tensor(inputs).cuda()
-                val_encodedLabels = torch.tensor(val_encodedLabels).cuda()
-            
-            #enc.fit(labels)
-            
-            
-            val_outputs=cnn(inputs)
-            val_loss=criterion(val_outputs,torch.max(val_encodedLabels, 1)[1])
-            running_loss+= val_loss.item()
-            val_losses.append(val_loss)
-            val_encodedLabels=val_encodedLabels.cpu()
-            inputs=inputs.cpu()
-            val_pred=np.argmax(train_outputs.detach().numpy(),axis=1)
-            val_encodedLabels = val_encodedLabels[:, 0]
-            for a, b in zip(train_pred, val_encodedLabels):
-                if a == b:
-                    count += 1
-            torch.cuda.empty_cache()
-            torch.no_grad()
-            if i % 200 == 199:    # print every 2000 mini-batches
-                print('[%d, %5d] validation loss: %.3f' %
-                    (epoch + 1, i + 1, running_loss / 200))
-                running_loss = 0.0
-                #softmax=torch.exp(val_outputs)
-                #prob=list(softmax.numpy())
-                #val_pred=np.argmax(prob,axis=1)
-                print("Validation Accuracy = ", count/400.0)
-                count=0
-                #val_accuracy=accuracy_score(labels,val_pred)
-                #print("Validation Accuracy = ",val_accuracy)
-                #.plot(val_losses, label='Validation loss')
-                #plt.legend()
-                #plt.show()
-        '''
 
     print('Finished Training')
     
