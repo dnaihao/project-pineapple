@@ -188,7 +188,7 @@ def train():
                     print('Validation Accuracy = %.3f'  % (val_count/(32*len(val_set))))
                     print()
                 if (epoch>4):
-                    torch.save(cnn, './/Saved Models//model'+str(epoch+1)+'.pt')
+                    torch.save(cnn, os.path.join(".", "Saved Models", "model")+str(epoch+1)+'.pt')
 
             
         running_loss=0.0
