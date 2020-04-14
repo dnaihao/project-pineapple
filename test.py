@@ -38,12 +38,13 @@ CLASSIFIER_PATH = os.path.join(".", "Saved Models", "model")
 
 def classify_img(img, epoch_to_load=-1):
     # Given an input image, classify the image with the classifier
-    # Input- img: H x W x Z Numpy Tensor
+    # Input- img: H x W x Z Numpy Tensor (channel first)
     #        epoch_to_load: which epoch's model/params to load (idx
     #                       starting from 0), default loading the 
     #                       last epoch's model/params
     # 
     # Output- : label associated with the feeded image
+
     map_location = None
     if torch.cuda.is_available():
         map_location=lambda storage, loc: storage.cuda()
@@ -57,6 +58,16 @@ def classify_img(img, epoch_to_load=-1):
 
     model_to_load = saved_models[epoch_to_load]
     model = torch.load(model_to_load, map_location=map_location)
+
+    ######################################################
+    ######################################################
+    # TODO: interprete tensor as whether the img has 
+    # wheelchair user
+    # example of the current output:
+    #   tensor([[ 0.9059, -0.4302]], grad_fn=<AddmmBackward>)
+    ######################################################
+    ######################################################
+
     return model(img)
 
 
@@ -180,6 +191,19 @@ if __name__ == "__main__":
 
             # Convert from PIL image to numpy array
             cropped_img = np.array(cropped_img)
+
+            ######################################################
+            ######################################################
+            # TODO: deal with the 4 dimensions in PNG 
+            # right now the second layer model can only
+            # handle 3 dimension JPG pics
+            ######################################################
+            ######################################################
+
+            # Convert from channel last to channel first np array
+            cropped_img = np.moveaxis(cropped_img, -1, 0)
+            # Expand the dimension for it to fit the model weight
+            cropped_img = np.expand_dims(cropped_img, axis=0)
             label = classify_img(torch.Tensor(cropped_img))
             print(label)
 
