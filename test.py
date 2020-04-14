@@ -37,7 +37,7 @@ CLASSIFIER_PATH = os.path.join(".", "Saved Models", "model")
 
 def classify_img(img, epoch_to_load=-1):
     # Given an input image, classify the image with the classifier
-    # Input- img: H x W matrix
+    # Input- img: H x W Numpy Tensor
     #        epoch_to_load: which epoch's model/params to load (idx
     #                       starting from 0), default loading the 
     #                       last epoch's model/params
@@ -155,10 +155,20 @@ def get_args():
     return args
 
 if __name__ == "__main__":
-    # args = get_args()
-    # new_js = run()
-    # print(new_js)
-    # if args.b:
-    #     save_img_with_new_bbox(new_js)
-    label = classify_img(torch.Tensor(input_img))
-    print(label)
+    args = get_args()
+    new_js = run()
+    print(new_js)
+    if args.b:
+        save_img_with_new_bbox(new_js)
+    
+    ################################################
+    ################################################
+    ######### Testing for second layer #############
+    ################################################
+    ################################################
+    #  input_img = matrix for the bounding box for 
+    #              the object
+    #  label = classify_img(torch.Tensor(input_img))
+    #  print(label)
+
+    ################################################
