@@ -38,13 +38,12 @@ CLASSIFIER_PATH = os.path.join(".", "Saved Models", "model")
 
 def classify_img(img, epoch_to_load=-1):
     # Given an input image, classify the image with the classifier
-    # Input- img: H x W Numpy Tensor
+    # Input- img: H x W x Z Numpy Tensor
     #        epoch_to_load: which epoch's model/params to load (idx
     #                       starting from 0), default loading the 
     #                       last epoch's model/params
     # 
     # Output- : label associated with the feeded image
-
     map_location = None
     if torch.cuda.is_available():
         map_location=lambda storage, loc: storage.cuda()
