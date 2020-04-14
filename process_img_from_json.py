@@ -3,9 +3,9 @@ import os
 from PIL import Image
 import argparse
 
-RAW_DATA_PATH = "C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Images_RGB"
+RAW_DATA_PATH = os.path.join("obj_det", "imgs")
 PROCESSED_TRAIN_DATA_PATH = "C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Train"
-PROCESSED_VAL_DATA_PATH = "C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Val"
+PROCESSED_VAL_DATA_PATH = os.path.join("obj_det", "imgs")
 JSON_F = "C:\\Users\\shubh\\OneDrive\\Desktop\\ENTR 390\\Dataset\\Mobility.json"
 NEW_SHAPE = (100, 100)
 TRAIN_TO_VAL_RATIO = 0.7
@@ -102,8 +102,35 @@ def process_images():
                     index += 1
             if (idx % 100 == 0):
                 write_json(val_j, train=False)
-        
-def crop_and_resize_image(f_name, region, index, train=True):
+
+def num_objects(f_name, j):
+    # Given json file and the image file name, return number of objects detected
+    # in the image.
+    #
+    # Input- f_name: name of the image (string)
+    #        j: json file (Dict)
+    # 
+    # Output- : number of objects detected in the image
+    return len(j.get(f_name))
+
+
+def find_region(f_name, j, idx):
+    # Given json file and the image file name and the index of the object
+    # , return the region of the object in the json file.
+    #
+    # Input- f_name: name of the image (string)
+    #        j: json file (Dict)
+    #        idx: index of the object (Int)
+    # 
+    # Output- : tuple represents the region of the object
+    try:
+        obj = j.get(f_name)[idx]
+        return (obj.get("left"), obj.get("up"), obj.get("right"), obj.get("down"))
+    except Exception as e:
+        print("Exception happened in finding region: {}".format(str(e)))
+    
+      
+def crop_and_resize_image(f_name, region, index, train=True, save=True):
     img_path = os.path.join(os.getcwd(), RAW_DATA_PATH, f_name)
     if f_name.endswith('.jpg') or f_name.endswith('.png'):
         f_name = f_name[:-4] + '_' + str(index) + f_name[-4:]
@@ -114,11 +141,13 @@ def crop_and_resize_image(f_name, region, index, train=True):
     try:
         img = Image.open(img_path)
         img = img.crop(region).resize(NEW_SHAPE)
-        img.save(save_path)
+        if save:
+            img.save(save_path)
+            return f_name
     except:
         print("failed to process image")
         exit(1)
-    return f_name
+    return img
 
 def parse_args():
     global RAW_DATA_PATH, PROCESSED_TRAIN_DATA_PATH, PROCESSED_VAL_DATA_PATH, JSON_F, NEW_SHAPE

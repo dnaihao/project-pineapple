@@ -19,6 +19,7 @@ from VRUDataset import VRUDataset
 import argparse
 from models.cnn import CNN
 from models.autoencoder import Autoencoder
+from process_img_from_json import crop_and_resize_image, num_objects, find_region
 
 # from obj_det.darknet import Darknet
 # from obj_det.util import load_classes
@@ -154,10 +155,10 @@ def get_args():
     args = parser.parse_args()
     return args
 
+
 if __name__ == "__main__":
     args = get_args()
     new_js = run()
-    print(new_js)
     if args.b:
         save_img_with_new_bbox(new_js)
     
@@ -166,9 +167,21 @@ if __name__ == "__main__":
     ######### Testing for second layer #############
     ################################################
     ################################################
-    #  input_img = matrix for the bounding box for 
-    #              the object
-    #  label = classify_img(torch.Tensor(input_img))
-    #  print(label)
+    for img_name in new_js.keys():
+        for idx in range(num_objects(img_name, new_js)):
+            region = find_region(img_name, new_js, idx)
+            cropped_img = crop_and_resize_image(img_name, region, idx, train=False, save=False)
+
+            # resize the cropped image
+            new_size = (100, 100)
+            # resize the cropped image
+            import PIL
+            assert type(cropped_img) is PIL.Image.Image
+            cropped_img = cropped_img.resize(new_size)
+
+            # Convert from PIL image to numpy array
+            cropped_img = np.array(cropped_img)
+            label = classify_img(torch.Tensor(cropped_img))
+            print(label)
 
     ################################################
