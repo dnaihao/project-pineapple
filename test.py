@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 import torch.optim as optim
+import torchvision.models as models
 import json
 import os
 import cv2
@@ -25,29 +26,46 @@ from models.autoencoder import Autoencoder
 import copy
 import pickle
 import argparse
+import glob
 
 JSON_F = "obj_det/detected.json"
 POTENTIAL_LIST = ["chair", "bench", "bicycle", "motorbike"]
 NEW_PERSON_THRESH = 0.9
 OVERLAP_PERC = 0.5
+CLASSIFIER_PATH = os.path.join(".", "Saved Models", "model")
 
 
-
-# feed image into classification algorithm and print result
-def classify_img():
+def classify_img(img, epoch_to_load=-1):
     # Given an input image, classify the image with the classifier
     # Input- img: H x W matrix
+    #        epoch_to_load: which epoch's model/params to load (idx
+    #                       starting from 0), default loading the 
+    #                       last epoch's model/params
     # 
-    # Output- label: label associated with the feeded image
-    classifier = Autoencoder()
-    # TODO: load parameters once Shubang done with the autoencoder
-    # TODO: classifier.load_param()
-    # TODO: is the output of Autoencoer the label?
-    # label = classifier(img)
-    # return label
+    # Output- : label associated with the feeded image
 
-# crop and save image defined by all bbox in given json
-def crop_image_with_processed_bbox(img, j):
+    map_location = None
+    if torch.cuda.is_available():
+        map_location=lambda storage, loc: storage.cuda()
+    else:
+        map_location='cpu'
+
+    saved_models = glob.glob(os.path.join(CLASSIFIER_PATH, "*.pt"))
+    # Assumed model saved in a pattern with larger ones corresponding to
+    # later epochs
+    saved_models.sort()
+
+    model_to_load = saved_models[epoch_to_load]
+    model = torch.load(model_to_load, map_location=map_location)
+    return model(img)
+
+
+def crop_image_with_processed_bbox(img_name, j):
+    # Given an input image, crop image by the information specified in json file
+    # Input- img_name: name of the image
+    #        j: json file specifies the information for the bounding box
+    # 
+    # Output- : matrix represent the bounding box
     pass
 
 
@@ -137,8 +155,10 @@ def get_args():
     return args
 
 if __name__ == "__main__":
-    args = get_args()
-    new_js = run()
-    print(new_js)
-    if args.b:
-        save_img_with_new_bbox(new_js)
+    # args = get_args()
+    # new_js = run()
+    # print(new_js)
+    # if args.b:
+    #     save_img_with_new_bbox(new_js)
+    label = classify_img(torch.Tensor(input_img))
+    print(label)
