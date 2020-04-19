@@ -87,9 +87,9 @@ def crop_image_with_processed_bbox(img_name, j):
 # output - false
 def is_wheelchair(output): 
     if output[0][0]>output[0][1]:
-        return false
+        return False
     else:
-        return true
+        return True
 # if a bbox labelled person overlaps by OVERLAP_PERC
 # with at least one labelled bbox in the following:
 # motorbike, bicycle, chair, bench ...
@@ -217,7 +217,7 @@ if __name__ == "__main__":
             label = classify_img(torch.Tensor(cropped_img))
             output  = is_wheelchair(label)
 
-            #print(label)
+            print(label)
             print(output)
 
     ################################################
