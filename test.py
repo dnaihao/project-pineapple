@@ -80,6 +80,16 @@ def crop_image_with_processed_bbox(img_name, j):
     pass
 
 
+# Determines if CNN output is wheelchair or not
+# Input - torch tensor
+# Example input - 
+#       tensor([[ 0.9059, -0.4302]], grad_fn=<AddmmBackward>)
+# output - false
+def is_wheelchair(output): 
+    if output[0][0]>output[0][1]:
+        return false
+    else:
+        return true
 # if a bbox labelled person overlaps by OVERLAP_PERC
 # with at least one labelled bbox in the following:
 # motorbike, bicycle, chair, bench ...
@@ -199,12 +209,15 @@ if __name__ == "__main__":
             # handle 3 dimension JPG pics
             ######################################################
             ######################################################
-
+            
             # Convert from channel last to channel first np array
             cropped_img = np.moveaxis(cropped_img, -1, 0)
             # Expand the dimension for it to fit the model weight
             cropped_img = np.expand_dims(cropped_img, axis=0)
             label = classify_img(torch.Tensor(cropped_img))
-            print(label)
+            output  = is_wheelchair(label)
+
+            #print(label)
+            print(output)
 
     ################################################
